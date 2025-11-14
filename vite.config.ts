@@ -5,6 +5,7 @@ import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import { optimizeCssModules } from 'vite-plugin-optimize-css-modules';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import * as dotenv from 'dotenv';
+import { vercelPreset } from '@vercel/remix/vite';
 
 // Load environment variables from multiple files
 dotenv.config({ path: '.env.local' });
@@ -45,6 +46,7 @@ export default defineConfig((config) => {
       },
       config.mode !== 'test' && !process.env.VERCEL && remixCloudflareDevProxy(),
       remixVitePlugin({
+        presets: process.env.VERCEL ? [vercelPreset()] : undefined,
         future: {
           v3_fetcherPersist: true,
           v3_relativeSplatPath: true,
