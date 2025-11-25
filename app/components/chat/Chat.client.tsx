@@ -493,7 +493,6 @@ export const ChatImpl = memo(
               return;
             }
           }
-        }
 
         // If autoSelectTemplate is disabled or template selection failed, proceed with normal message
         const userMessageText = `[Model: ${model}]\n\n[Provider: ${provider.name}]\n\n${finalMessageContent}`;
