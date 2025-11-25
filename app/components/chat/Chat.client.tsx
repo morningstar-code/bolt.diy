@@ -112,7 +112,14 @@ export const ChatImpl = memo(
     });
     const { showChat } = useStore(chatStore);
     const [animationScope, animate] = useAnimate();
-    const [apiKeys, setApiKeys] = useState<Record<string, string>>({});
+    const [apiKeys, setApiKeys] = useState<Record<string, string>>(() => {
+      try {
+        const storedApiKeys = Cookies.get('apiKeys');
+        return storedApiKeys ? JSON.parse(storedApiKeys) : {};
+      } catch {
+        return {};
+      }
+    });
     const [chatMode, setChatMode] = useState<'discuss' | 'build'>('build');
     const [selectedElement, setSelectedElement] = useState<ElementInfo | null>(null);
     const mcpSettings = useMCPStore((state) => state.settings);
@@ -412,15 +419,26 @@ export const ChatImpl = memo(
       if (!chatStarted) {
         setFakeLoading(true);
 
-        if (autoSelectTemplate) {
-          const { template, title } = await selectStarterTemplate({
-            message: finalMessageContent,
-            model,
-            provider,
-            apiKeys,
-          });
+        let selectedTemplate: { template: string; title: string } | null = null;
 
-          if (template !== 'blank') {
+        if (autoSelectTemplate) {
+          try {
+            selectedTemplate = await selectStarterTemplate({
+              message: finalMessageContent,
+              model,
+              provider,
+              apiKeys,
+            });
+          } catch (error) {
+            const errorMessage =
+              error instanceof Error ? error.message : 'Unable to automatically select a starter template.';
+            toast.warning(`${errorMessage}\nContinuing with a blank template.`);
+          }
+        }
+
+        if (selectedTemplate && selectedTemplate.template !== 'blank') {
+          const { template, title } = selectedTemplate;
+
             const temResp = await getTemplates(template, title).catch((e) => {
               if (e.message.includes('rate limit')) {
                 toast.warning('Rate limit exceeded. Skipping starter template\n Continuing with blank template');

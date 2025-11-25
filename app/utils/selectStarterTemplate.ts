@@ -113,8 +113,16 @@ export const selectStarterTemplate = async (options: {
     credentials: 'include',
     body: JSON.stringify(requestBody),
   });
-  const respJson: { text: string } = await response.json();
-  console.log(respJson);
+  const respJson = (await response.json()) as { text?: string; message?: string; error?: boolean };
+
+  if (!response.ok || respJson?.error) {
+    const errorMessage =
+      respJson?.message ||
+      `Template selection failed with status ${response.status}${
+        response.statusText ? ` (${response.statusText})` : ''
+      }`;
+    throw new Error(errorMessage);
+  }
 
   const { text } = respJson;
   const selectedTemplate = parseSelectedTemplate(text);
