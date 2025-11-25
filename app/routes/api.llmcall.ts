@@ -65,13 +65,16 @@ function validateTokenLimits(modelDetails: ModelInfo, requestedTokens: number): 
 }
 
 async function llmCallAction({ context, request }: ActionFunctionArgs) {
-  const { system, message, model, provider, streamOutput } = await request.json<{
-    system: string;
-    message: string;
-    model: string;
-    provider: ProviderInfo;
-    streamOutput?: boolean;
-  }>();
+  const { system, message, model, provider, streamOutput, apiKeys: bodyApiKeys, providerSettings: bodyProviderSettings } =
+    await request.json<{
+      system: string;
+      message: string;
+      model: string;
+      provider: ProviderInfo;
+      streamOutput?: boolean;
+      apiKeys?: Record<string, string>;
+      providerSettings?: Record<string, IProviderSetting>;
+    }>();
 
   const { name: providerName } = provider;
 
@@ -91,8 +94,16 @@ async function llmCallAction({ context, request }: ActionFunctionArgs) {
   }
 
   const cookieHeader = request.headers.get('Cookie');
-  const apiKeys = getApiKeysFromCookie(cookieHeader);
-  const providerSettings = getProviderSettingsFromCookie(cookieHeader);
+  const cookieApiKeys = getApiKeysFromCookie(cookieHeader);
+  const cookieProviderSettings = getProviderSettingsFromCookie(cookieHeader);
+  const apiKeys = {
+    ...cookieApiKeys,
+    ...(bodyApiKeys || {}),
+  };
+  const providerSettings = {
+    ...cookieProviderSettings,
+    ...(bodyProviderSettings || {}),
+  };
 
   if (streamOutput) {
     try {

@@ -1,5 +1,5 @@
 import ignore from 'ignore';
-import type { ProviderInfo } from '~/types/model';
+import type { IProviderSetting, ProviderInfo } from '~/types/model';
 import type { Template } from '~/types/template';
 import { STARTER_TEMPLATES } from './constants';
 
@@ -82,16 +82,35 @@ const parseSelectedTemplate = (llmOutput: string): { template: string; title: st
   }
 };
 
-export const selectStarterTemplate = async (options: { message: string; model: string; provider: ProviderInfo }) => {
-  const { message, model, provider } = options;
-  const requestBody = {
+export const selectStarterTemplate = async (options: {
+  message: string;
+  model: string;
+  provider: ProviderInfo;
+  apiKeys?: Record<string, string>;
+  providerSettings?: Record<string, IProviderSetting>;
+}) => {
+  const { message, model, provider, apiKeys, providerSettings } = options;
+  const requestBody: Record<string, unknown> = {
     message,
     model,
     provider,
     system: starterTemplateSelectionPrompt(templates),
   };
+
+  if (apiKeys && Object.keys(apiKeys).length > 0) {
+    requestBody.apiKeys = apiKeys;
+  }
+
+  if (providerSettings && Object.keys(providerSettings).length > 0) {
+    requestBody.providerSettings = providerSettings;
+  }
+
   const response = await fetch('/api/llmcall', {
     method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
     body: JSON.stringify(requestBody),
   });
   const respJson: { text: string } = await response.json();

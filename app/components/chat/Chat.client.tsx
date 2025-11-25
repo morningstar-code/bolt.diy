@@ -417,6 +417,7 @@ export const ChatImpl = memo(
             message: finalMessageContent,
             model,
             provider,
+            apiKeys,
           });
 
           if (template !== 'blank') {

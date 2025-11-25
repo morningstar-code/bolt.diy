@@ -24,6 +24,10 @@ const logger = createScopedLogger('api.chat');
 function parseCookies(cookieHeader: string): Record<string, string> {
   const cookies: Record<string, string> = {};
 
+  if (!cookieHeader) {
+    return cookies;
+  }
+
   const items = cookieHeader.split(';').map((cookie) => cookie.trim());
 
   items.forEach((item) => {
@@ -48,30 +52,51 @@ async function chatAction({ context, request }: ActionFunctionArgs) {
     },
   });
 
-  const { messages, files, promptId, contextOptimization, supabase, chatMode, designScheme, maxLLMSteps } =
-    await request.json<{
-      messages: Messages;
-      files: any;
-      promptId?: string;
-      contextOptimization: boolean;
-      chatMode: 'discuss' | 'build';
-      designScheme?: DesignScheme;
-      supabase?: {
-        isConnected: boolean;
-        hasSelectedProject: boolean;
-        credentials?: {
-          anonKey?: string;
-          supabaseUrl?: string;
-        };
+  const {
+    messages,
+    files,
+    promptId,
+    contextOptimization,
+    supabase,
+    chatMode,
+    designScheme,
+    maxLLMSteps,
+    apiKeys: bodyApiKeys,
+    providerSettings: bodyProviderSettings,
+  } = await request.json<{
+    messages: Messages;
+    files: any;
+    promptId?: string;
+    contextOptimization: boolean;
+    chatMode: 'discuss' | 'build';
+    designScheme?: DesignScheme;
+    supabase?: {
+      isConnected: boolean;
+      hasSelectedProject: boolean;
+      credentials?: {
+        anonKey?: string;
+        supabaseUrl?: string;
       };
-      maxLLMSteps: number;
-    }>();
+    };
+    maxLLMSteps: number;
+    apiKeys?: Record<string, string>;
+    providerSettings?: Record<string, IProviderSetting>;
+  }>();
 
-  const cookieHeader = request.headers.get('Cookie');
-  const apiKeys = JSON.parse(parseCookies(cookieHeader || '').apiKeys || '{}');
-  const providerSettings: Record<string, IProviderSetting> = JSON.parse(
-    parseCookies(cookieHeader || '').providers || '{}',
-  );
+  const cookieHeader = request.headers.get('Cookie') || '';
+  const parsedCookies = parseCookies(cookieHeader);
+  const cookieApiKeys = parsedCookies.apiKeys ? JSON.parse(parsedCookies.apiKeys) : {};
+  const cookieProviderSettings = parsedCookies.providers
+    ? (JSON.parse(parsedCookies.providers) as Record<string, IProviderSetting>)
+    : {};
+  const apiKeys = {
+    ...cookieApiKeys,
+    ...(bodyApiKeys || {}),
+  };
+  const providerSettings: Record<string, IProviderSetting> = {
+    ...cookieProviderSettings,
+    ...(bodyProviderSettings || {}),
+  };
 
   const stream = new SwitchableStream();
 
