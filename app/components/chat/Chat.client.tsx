@@ -535,8 +535,19 @@ export const ChatImpl = memo(
         const userUpdateArtifact = filesToArtifacts(modifiedFiles, `${Date.now()}`);
         const messageText = `[Model: ${model}]\n\n[Provider: ${provider.name}]\n\n${userUpdateArtifact}${finalMessageContent}`;
 
-        const attachmentOptions =
-          uploadedFiles.length > 0 ? { experimental_attachments: await filesToAttachments(uploadedFiles) } : undefined;
+        let attachmentOptions:
+          | {
+              experimental_attachments: Attachment[];
+            }
+          | undefined;
+
+        if (uploadedFiles.length > 0) {
+          const attachments = await filesToAttachments(uploadedFiles);
+
+          if (attachments) {
+            attachmentOptions = { experimental_attachments: attachments };
+          }
+        }
 
         append(
           {
@@ -551,8 +562,19 @@ export const ChatImpl = memo(
       } else {
         const messageText = `[Model: ${model}]\n\n[Provider: ${provider.name}]\n\n${finalMessageContent}`;
 
-        const attachmentOptions =
-          uploadedFiles.length > 0 ? { experimental_attachments: await filesToAttachments(uploadedFiles) } : undefined;
+        let attachmentOptions:
+          | {
+              experimental_attachments: Attachment[];
+            }
+          | undefined;
+
+        if (uploadedFiles.length > 0) {
+          const attachments = await filesToAttachments(uploadedFiles);
+
+          if (attachments) {
+            attachmentOptions = { experimental_attachments: attachments };
+          }
+        }
 
         append(
           {
