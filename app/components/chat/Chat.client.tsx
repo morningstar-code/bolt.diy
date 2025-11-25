@@ -531,23 +531,16 @@ export const ChatImpl = memo(
 
       chatStore.setKey('aborted', false);
 
-      const buildAttachmentOptions = async () => {
-        if (uploadedFiles.length === 0) {
-          return undefined;
-        }
+      const attachmentOptions =
+        uploadedFiles.length > 0
+          ? (() => {
+              return filesToAttachments(uploadedFiles).then((attachments) =>
+                attachments ? { experimental_attachments: attachments } : undefined,
+              );
+            })()
+          : Promise.resolve(undefined);
 
-        const attachments = await filesToAttachments(uploadedFiles);
-
-        if (!attachments) {
-          return undefined;
-        }
-
-        return {
-          experimental_attachments: attachments,
-        };
-      };
-
-      const attachmentOptions = await buildAttachmentOptions();
+      const resolvedAttachmentOptions = await attachmentOptions;
 
       if (modifiedFiles !== undefined) {
         const userUpdateArtifact = filesToArtifacts(modifiedFiles, `${Date.now()}`);
@@ -559,7 +552,7 @@ export const ChatImpl = memo(
             content: messageText,
             parts: createMessageParts(messageText, imageDataList),
           },
-          attachmentOptions,
+          resolvedAttachmentOptions,
         );
 
         workbenchStore.resetAllFileModifications();
@@ -572,7 +565,7 @@ export const ChatImpl = memo(
             content: messageText,
             parts: createMessageParts(messageText, imageDataList),
           },
-          attachmentOptions,
+          resolvedAttachmentOptions,
         );
       }
 
