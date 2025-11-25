@@ -566,31 +566,6 @@ export const ChatImpl = memo(
       } else {
         const messageText = `[Model: ${model}]\n\n[Provider: ${provider.name}]\n\n${finalMessageContent}`;
 
-        let attachmentOptions:
-          | {
-              experimental_attachments: Attachment[];
-            }
-          | undefined;
-
-        if (uploadedFiles.length > 0) {
-          const attachments = await filesToAttachments(uploadedFiles);
-
-          if (attachments) {
-            attachmentOptions = { experimental_attachments: attachments };
-          }
-        }
-
-        append(
-          {
-            role: 'user',
-            content: messageText,
-            parts: createMessageParts(messageText, imageDataList),
-          },
-          attachmentOptions,
-        );
-      } else {
-        const messageText = `[Model: ${model}]\n\n[Provider: ${provider.name}]\n\n${finalMessageContent}`;
-
         append(
           {
             role: 'user',
