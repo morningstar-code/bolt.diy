@@ -1,6 +1,7 @@
 const React = require("react");
 const ReactDOMServer = require("react-dom/server");
 const sharp = require("sharp");
+const lu = require("react-icons/lu");
 const fa = require("react-icons/fa6");
 const fs = require("fs");
 const path = require("path");
@@ -9,71 +10,81 @@ const OUT = path.join(__dirname, "icons");
 fs.mkdirSync(OUT, { recursive: true });
 
 const W = "FFFFFF";
-const NAVY = "0B2C5E";
-const BLUE = "1668B8";
+const NAVY = "0D1B5E";
+const BLUE = "0B4489";
 const GREEN = "2E9E5B";
 
-// name -> [component, hexColor]
+// El original usa iconografía de trazo fino (Lucide), no siluetas macizas.
+// [componente, color, grosorDeTrazo]
 const ICONS = {
-  // slide 1 – franja inferior de la portada
-  s1_datos:            [fa.FaDatabase,           W],
-  s1_interop:          [fa.FaCircleNodes,        W],
-  s1_estandares:       [fa.FaShieldHalved,       W],
-  s1_conectividad:     [fa.FaWifi,               W],
-  s1_sostenibilidad:   [fa.FaLeaf,               W],
+  // 1 · franja de pilares de la portada
+  s1_datos:          [lu.LuDatabase,     W, 1.7],
+  s1_interop:        [lu.LuNetwork,      W, 1.7],
+  s1_estandares:     [lu.LuShieldCheck,  W, 1.7],
+  s1_conectividad:   [lu.LuWifi,         W, 1.7],
+  s1_sostenibilidad: [lu.LuLeaf,         W, 1.7],
 
-  // slide 2 – tarjeta flotante (blanco sobre círculo azul)
-  s2_servicios:        [fa.FaUsersGear,          W],
-  s2_decisiones:       [fa.FaDiagramProject,     W],
-  s2_inversion:        [fa.FaBuildingColumns,    W],
-  s2_ciudades:         [fa.FaCity,               W],
+  // 2 · tarjeta flotante
+  s2_servicios:      [lu.LuUserCog,      W, 1.9],
+  s2_decisiones:     [lu.LuWorkflow,     W, 1.9],
+  s2_inversion:      [lu.LuLandmark,     W, 1.9],
+  s2_ciudades:       [lu.LuBuilding2,    W, 1.9],
 
-  // slide 2 – banda de KPIs
-  s2_kpi_municipios:   [fa.FaSitemap,            W],
-  s2_kpi_ciudadanos:   [fa.FaUsers,              W],
-  s2_kpi_proyectos:    [fa.FaClipboardCheck,     W],
-  s2_kpi_decision:     [fa.FaLightbulb,          W],
+  // 2 · banda de indicadores
+  s2_kpi_municipios: [lu.LuNetwork,        W, 1.6],
+  s2_kpi_ciudadanos: [lu.LuUsers,          W, 1.6],
+  s2_kpi_proyectos:  [lu.LuClipboardCheck, W, 1.6],
+  s2_kpi_decision:   [lu.LuLightbulb,      W, 1.6],
 
-  // slide 5 – tres tarjetas
-  s5_naturaleza:       [fa.FaBuildingColumns,    W],
-  s5_tecnico:          [fa.FaArrowRightArrowLeft, W],
-  s5_valor:            [fa.FaCheck,              W],
+  // 5 · tres columnas
+  s5_naturaleza:     [lu.LuLandmark,    W, 1.7],
+  s5_tecnico:        [lu.LuShuffle,     W, 1.9],
+  s5_valor:          [lu.LuCheck,       W, 2.4],
 
-  // slide 6 – cómo opera OASC
-  s6_gobernanza:       [fa.FaBuildingColumns,    W],
-  s6_servicios:        [fa.FaBookOpen,           W],
-  s6_proyectos:        [fa.FaDiagramProject,     W],
-  s6_itu:              [fa.FaHandshake,          W],
+  // 6 · cómo opera OASC
+  s6_gobernanza:     [lu.LuLandmark,    W, 1.9],
+  s6_servicios:      [lu.LuBookOpen,    W, 1.9],
+  s6_proyectos:      [lu.LuWorkflow,    W, 1.9],
+  s6_itu:            [lu.LuHandshake,   W, 1.9],
 
-  // slide 8 – cuatro pilares (línea, navy sobre claro)
-  s8_gobernanza:       [fa.FaEarthAmericas,      NAVY],
-  s8_servicios:        [fa.FaScrewdriverWrench,  NAVY],
-  s8_proyectos:        [fa.FaLayerGroup,         NAVY],
-  s8_alianzas:         [fa.FaHandshakeAngle,     NAVY],
+  // 8 · cuatro pilares (trazo navy, tamaño grande)
+  s8_gobernanza:     [lu.LuGlobe,       NAVY, 1.35],
+  s8_servicios:      [lu.LuWrench,      NAVY, 1.35],
+  s8_proyectos:      [lu.LuLayers,      NAVY, 1.35],
+  s8_alianzas:       [lu.LuHandshake,   NAVY, 1.35],
 
-  // slide 11 – impacto ciudadanía (blanco sobre navy)
-  s11_salud:           [fa.FaHeart,              W],
-  s11_movilidad:       [fa.FaCarSide,            W],
-  s11_seguridad:       [fa.FaShieldHalved,       W],
-  s11_alumbrado:       [fa.FaLightbulb,          W],
-  s11_ambiente:        [fa.FaLeaf,               W],
-  s11_digital:         [fa.FaMobileScreenButton, W],
+  // 11 · impacto ciudadano
+  s11_salud:         [lu.LuHeartPulse,        W, 1.6],
+  s11_movilidad:     [lu.LuCarFront,          W, 1.6],
+  s11_seguridad:     [lu.LuShieldCheck,       W, 1.6],
+  s11_alumbrado:     [lu.LuLightbulb,         W, 1.6],
+  s11_ambiente:      [lu.LuLeaf,              W, 1.6],
+  s11_digital:       [lu.LuMonitorSmartphone, W, 1.6],
 
-  // vietas
-  check_blue:          [fa.FaCircleCheck,        BLUE],
-  check_green:         [fa.FaCircleCheck,        GREEN],
-  quote_shield:        [fa.FaShieldHalved,       BLUE],
+  // viñetas y adornos
+  check_green:       [lu.LuCircleCheck, GREEN, 2.0],
+  quote_shield:      [lu.LuShieldCheck, W,     1.9],
 };
 
+// El original sí usa disco macizo con check blanco en las láminas 4 y 7.
+const SOLID = { check_blue: [fa.FaCircleCheck, BLUE] };
+
 (async () => {
-  for (const [name, [Comp, color]] of Object.entries(ICONS)) {
+  for (const [name, [Comp, color, sw]] of Object.entries(ICONS)) {
+    const svg = ReactDOMServer.renderToStaticMarkup(
+      React.createElement(Comp, { color: "#" + color, size: 512, strokeWidth: sw })
+    );
+    await sharp(Buffer.from(svg), { density: 600 })
+      .resize(512, 512, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+      .png().toFile(path.join(OUT, name + ".png"));
+  }
+  for (const [name, [Comp, color]] of Object.entries(SOLID)) {
     const svg = ReactDOMServer.renderToStaticMarkup(
       React.createElement(Comp, { color: "#" + color, size: 512 })
     );
     await sharp(Buffer.from(svg), { density: 600 })
       .resize(512, 512, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
-      .png()
-      .toFile(path.join(OUT, name + ".png"));
+      .png().toFile(path.join(OUT, name + ".png"));
   }
-  console.log("Iconos generados:", Object.keys(ICONS).length);
+  console.log("Iconos:", Object.keys(ICONS).length + Object.keys(SOLID).length);
 })();
